@@ -1,20 +1,29 @@
-package application 
+package application
 
 import (
-	"log"
-	"time"
-	"net/http"
+	"encoding/gob"
 	"html/template"
+	"log"
+	"net/http"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/charlie-pecora/new-reddit/authenticator"
 
+	"github.com/charlie-pecora/new-reddit/application/login"
+	"github.com/charlie-pecora/new-reddit/application/user"
+	"github.com/charlie-pecora/new-reddit/authenticator"
+	"github.com/charlie-pecora/new-reddit/sessions"
 )
 
 // New registers the routes and returns the router.
 func New(auth *authenticator.Authenticator) *chi.Mux {
 	router := chi.NewRouter()
+
+	// To store custom types in our cookies,
+	// we must first register them using gob.Register
+	gob.Register(map[string]interface{}{})
+	router.Use(sessions.NewSessionMiddleware())
 
 	//register middlewares
 	router.Use(middleware.RequestID)
@@ -30,8 +39,13 @@ func New(auth *authenticator.Authenticator) *chi.Mux {
 	fs := http.FileServer(http.Dir("./static"))
 	router.Handle("/static/*", http.StripPrefix("/static/", fs))
 
-
 	router.Get("/", Index)
+	authEndpoints := login.NewAuthEndpoints(auth)
+	router.Get("/login", authEndpoints.Login)
+	router.Get("/callback", authEndpoints.Callback)
+	router.Get("/logout", authEndpoints.Logout)
+
+	router.Get("/user", user.User)
 
 	return router
 }
@@ -40,7 +54,7 @@ type IndexData struct {
 	Name string
 }
 
-var indexTemplate = template.Must(template.New("index.html").ParseFiles("./templates/index.html"))
+var indexTemplate = template.Must(template.New("base").ParseFiles("./templates/index.html", "./templates/base.html"))
 
 func Index(w http.ResponseWriter, r *http.Request) {
 	err := indexTemplate.Execute(w, IndexData{"Charlie"})

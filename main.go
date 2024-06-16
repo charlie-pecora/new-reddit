@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
+	"github.com/charlie-pecora/new-reddit/application"
+	"github.com/charlie-pecora/new-reddit/authenticator"
 	"html/template"
 	"log"
 	"net/http"
-	"github.com/charlie-pecora/new-reddit/application"
-	"github.com/charlie-pecora/new-reddit/authenticator"
 )
 
 func main() {
