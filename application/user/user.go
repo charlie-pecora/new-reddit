@@ -5,17 +5,11 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/charlie-pecora/new-reddit/sessions"
+	"github.com/charlie-pecora/new-reddit/application/middleware"
 )
 
 func User(w http.ResponseWriter, r *http.Request) {
-	session := sessions.GetSession(r)
-	_profile, ok := session.Values["profile"]
-	if !ok {
-		http.Redirect(w, r, "/", http.StatusFound)
-	}
-	profile := _profile.(map[string]interface{})
-	log.Printf("%+v", profile)
+	profile := r.Context().Value(middleware.ProfileContextKey).(map[string]interface{})
 
 	err := userTemplate.Execute(w, UserData{
 		Nickname: profile["nickname"].(string),
