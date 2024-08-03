@@ -10,7 +10,11 @@ import (
 
 func User(w http.ResponseWriter, r *http.Request) {
 	session := sessions.GetSession(r)
-	profile := session.Values["profile"].(map[string]interface{})
+	_profile, ok := session.Values["profile"]
+	if !ok {
+		http.Redirect(w, r, "/", http.StatusFound)
+	}
+	profile := _profile.(map[string]interface{})
 	log.Printf("%+v", profile)
 
 	err := userTemplate.Execute(w, UserData{

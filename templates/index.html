@@ -1,8 +1,17 @@
 {{define "content"}}
 <div>
-  <h1>Welcome to NewReddit {{ .Name }}</h1>  
+  {{if .Name}}
+  <h1>Welcome to NewReddit {{ .Name }}!</h1>  
   <div>
-    <a href="/login">SignIn</a>
+    <img class="avatar" src="{{ .Picture }}"/>
   </div>
+  {{else}}
+  <h1>Welcome to NewReddit!</h1>  
+  <div>
+    <p>
+      Please <a href="/login">log in</a>
+    </p>
+  </div>
+  {{end}}
 </div>
 {{end}}
