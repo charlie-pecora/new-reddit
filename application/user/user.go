@@ -6,14 +6,16 @@ import (
 	"net/http"
 
 	"github.com/charlie-pecora/new-reddit/application/middleware"
+	"github.com/charlie-pecora/new-reddit/application/login"
 )
 
 func User(w http.ResponseWriter, r *http.Request) {
-	profile := r.Context().Value(middleware.ProfileContextKey).(map[string]interface{})
+	profile := r.Context().Value(middleware.ProfileContextKey).(login.Profile)
+	log.Println(profile)
 
 	err := userTemplate.Execute(w, UserData{
-		Nickname: profile["nickname"].(string),
-		Picture:  profile["picture"].(string),
+		Nickname: profile.Nickname,
+		Picture:  profile.Picture,
 	})
 	if err != nil {
 		log.Printf("%+v", err)

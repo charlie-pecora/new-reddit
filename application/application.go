@@ -6,13 +6,18 @@ import (
 	"log"
 	"net/http"
 	"time"
+	"os"
+	"context"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/charlie-pecora/new-reddit/application/login"
 	"github.com/charlie-pecora/new-reddit/application/user"
+	"github.com/charlie-pecora/new-reddit/application/posts"
 	"github.com/charlie-pecora/new-reddit/authenticator"
+	"github.com/charlie-pecora/new-reddit/database"
 	"github.com/charlie-pecora/new-reddit/sessions"
 	myMiddleware "github.com/charlie-pecora/new-reddit/application/middleware"
 )
@@ -23,7 +28,8 @@ func New(auth *authenticator.Authenticator) *chi.Mux {
 
 	// To store custom types in our cookies,
 	// we must first register them using gob.Register
-	gob.Register(map[string]interface{}{})
+	gob.Register(map[string]any{})
+	gob.Register(login.Profile{})
 	router.Use(sessions.NewSessionMiddleware())
 
 	//register middlewares
@@ -40,8 +46,14 @@ func New(auth *authenticator.Authenticator) *chi.Mux {
 	fs := http.FileServer(http.Dir("./static"))
 	router.Handle("/static/*", http.StripPrefix("/static/", fs))
 
+	pool, err := pgxpool.New(context.Background(), os.Getenv("DATABASE_URL"))
+	if err != nil {
+		log.Fatal(err)
+	}
+	db := database.New(pool)
+
 	router.Get("/", Index)
-	authEndpoints := login.NewAuthEndpoints(auth)
+	authEndpoints := login.NewAuthEndpoints(auth, db)
 	router.Get("/login", authEndpoints.Login)
 	router.Get("/callback", authEndpoints.Callback)
 	router.Get("/logout", authEndpoints.Logout)
@@ -49,6 +61,7 @@ func New(auth *authenticator.Authenticator) *chi.Mux {
 	router.Group(func(r chi.Router) {
 		r.Use(myMiddleware.IsAuthenticated)
 		r.Get("/user", user.User)
+		r.Get("/posts", posts.ListPosts)
 	})
 
 	return router
@@ -66,10 +79,10 @@ func Index(w http.ResponseWriter, r *http.Request) {
 	var user IndexData
 	log.Printf("%+v\n", session)
 	switch profile := session.Values["profile"].(type) {
-	case (map[string]interface{}):
+	case (login.Profile):
 		user = IndexData{
-			Name: profile["nickname"].(string),
-			Picture:  profile["picture"].(string),
+			Name: profile.Nickname,
+			Picture:  profile.Picture,
 		}
 	default:
 	}

@@ -1,0 +1,12 @@
+{{define "content"}}
+<div>
+  <h1>Welcome to NewReddit {{ .Name }}!</h1>  
+  <div>
+    <ul>
+    {{ range .Posts }}
+      <li>{{ .Title }}</li>
+    {{ end }}
+    </ul>
+  </div>
+</div>
+{{end}}

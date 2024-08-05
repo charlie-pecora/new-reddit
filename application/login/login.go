@@ -3,20 +3,57 @@ package login
 import (
 	"crypto/rand"
 	"encoding/base64"
+	"errors"
 	"net/http"
 	"net/url"
 	"os"
+	"log"
 
 	"github.com/charlie-pecora/new-reddit/authenticator"
+	"github.com/charlie-pecora/new-reddit/database"
 	"github.com/charlie-pecora/new-reddit/sessions"
 )
 
 type AuthEndpoints struct {
 	a *authenticator.Authenticator
+	db *database.Queries
 }
 
-func NewAuthEndpoints(a *authenticator.Authenticator) AuthEndpoints {
-	return AuthEndpoints{a}
+type Profile struct {
+	Name string
+	Nickname string
+	Sub string
+	Picture string
+}
+
+func ParseProfile(source map[string]any) (Profile, error) {
+	var profile Profile
+	name, ok := source["name"].(string)
+	if !ok {
+		return profile, errors.New("name was not present in user profile.")
+	}
+	profile.Name = name
+	nickname, ok := source["nickname"].(string)
+	if !ok {
+		return profile, errors.New("nickname was not present in user profile.")
+	}
+	profile.Nickname = nickname
+	sub, ok := source["sub"].(string)
+	if !ok {
+		return profile, errors.New("sub was not present in user profile.")
+	}
+	profile.Sub = sub
+	picture, ok := source["picture"].(string)
+	if !ok {
+		return profile, errors.New("picture was not present in user profile.")
+	}
+	profile.Picture = picture
+
+	return profile, nil
+}
+
+func NewAuthEndpoints(a *authenticator.Authenticator, db *database.Queries) AuthEndpoints {
+	return AuthEndpoints{a, db}
 }
 
 // Handler for our login.
@@ -70,7 +107,7 @@ func (auth AuthEndpoints) Callback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var profile map[string]interface{}
+	var profile Profile
 	if err := idToken.Claims(&profile); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -82,6 +119,19 @@ func (auth AuthEndpoints) Callback(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	
+	// save user to database or update info
+	user, err := auth.db.CreateOrUpdateUser(r.Context(), database.CreateOrUpdateUserParams{
+		Name: profile.Nickname,
+		Sub: profile.Sub,
+	})
+	if err != nil {
+		log.Println(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	log.Printf("Received login fromm user %v", user.ID)
 
 	// Redirect to logged in page.
 	http.Redirect(w, r, "/user", http.StatusTemporaryRedirect)
