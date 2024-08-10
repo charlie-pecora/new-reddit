@@ -1,0 +1,14 @@
+{{define "content"}}
+<div>
+  <h1>Welcome to NewReddit {{ .Name }}!</h1>  
+  <div>
+    <form action="/posts/create" method="POST">
+      <label for="title">Title:</label><br>
+      <input type="text" id="title" name="title"><br>
+      <label for="content">Content:</label><br>
+      <input type="text" id="content" name="content"><br>
+      <input type="submit" value="Submit">
+    </form>
+  </div>
+</div>
+{{end}}

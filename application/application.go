@@ -58,10 +58,13 @@ func New(auth *authenticator.Authenticator) *chi.Mux {
 	router.Get("/callback", authEndpoints.Callback)
 	router.Get("/logout", authEndpoints.Logout)
 
+	postsEndpoints := posts.NewPostsEndpoints(db)
 	router.Group(func(r chi.Router) {
 		r.Use(myMiddleware.IsAuthenticated)
 		r.Get("/user", user.User)
-		r.Get("/posts", posts.ListPosts)
+		r.Get("/posts", postsEndpoints.ListPosts)
+		r.Get("/posts/create", postsEndpoints.GetPostForm)
+		r.Post("/posts/create", postsEndpoints.CreatePost)
 	})
 
 	return router
