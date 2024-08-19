@@ -2,9 +2,15 @@
 <div>
   <h1>Welcome to NewReddit {{ .Name }}!</h1>  
   <div>
+    <a class="button" href="/posts/create">Create a new post</a> 
+  </div>
+  <div>
     <ul>
     {{ range .Posts }}
-      <li>{{ .Title }}</li>
+      <li class="columns">
+        <div class="column">{{ .Title }}</div>
+        <div class="column"><a class="button"href="/posts/{{ .ID }}">detail</a>
+      </li>
     {{ end }}
     </ul>
   </div>

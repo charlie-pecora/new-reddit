@@ -1,11 +1,11 @@
 package posts
 
 import (
+	"errors"
 	"html/template"
 	"log"
 	"net/http"
 	"time"
-	"errors"
 
 	"github.com/charlie-pecora/new-reddit/application/login"
 	"github.com/charlie-pecora/new-reddit/application/middleware"
@@ -14,16 +14,16 @@ import (
 )
 
 type PostsEndpoints struct {
-	db *database.Queries;
+	db *database.Queries
 }
 
 func NewPostsEndpoints(db *database.Queries) PostsEndpoints {
-	return PostsEndpoints {
+	return PostsEndpoints{
 		db,
 	}
 }
 
-func (p PostsEndpoints)ListPosts(w http.ResponseWriter, r *http.Request) {
+func (p PostsEndpoints) ListPosts(w http.ResponseWriter, r *http.Request) {
 	profile := r.Context().Value(middleware.ProfileContextKey).(login.Profile)
 	posts, err := p.db.ListPosts(r.Context())
 	if err != nil {
@@ -33,7 +33,7 @@ func (p PostsEndpoints)ListPosts(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = postsTemplate.Execute(w, PostsData{
-		Name: profile.Nickname,
+		Name:  profile.Nickname,
 		Posts: posts,
 	})
 	if err != nil {
@@ -42,10 +42,10 @@ func (p PostsEndpoints)ListPosts(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (p PostsEndpoints)GetPostForm(w http.ResponseWriter, r *http.Request) {
+func (p PostsEndpoints) GetPostForm(w http.ResponseWriter, r *http.Request) {
 	profile := r.Context().Value(middleware.ProfileContextKey).(login.Profile)
 	err := createPostTemplate.Execute(w, PostsData{
-		Name: profile.Nickname,
+		Name:  profile.Nickname,
 		Posts: []database.ListPostsRow{},
 	})
 	if err != nil {
@@ -54,7 +54,7 @@ func (p PostsEndpoints)GetPostForm(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (p PostsEndpoints)CreatePost(w http.ResponseWriter, r *http.Request) {
+func (p PostsEndpoints) CreatePost(w http.ResponseWriter, r *http.Request) {
 	profile := r.Context().Value(middleware.ProfileContextKey).(login.Profile)
 
 	newPost, err := validateNewPostData(r)
@@ -67,8 +67,8 @@ func (p PostsEndpoints)CreatePost(w http.ResponseWriter, r *http.Request) {
 	created, err := p.db.CreatePosts(
 		r.Context(),
 		database.CreatePostsParams{
-			Sub: profile.Sub,
-			Title: newPost.Title,
+			Sub:     profile.Sub,
+			Title:   newPost.Title,
 			Content: pgtype.Text{String: newPost.Content},
 		},
 	)
@@ -82,24 +82,24 @@ func (p PostsEndpoints)CreatePost(w http.ResponseWriter, r *http.Request) {
 }
 
 type Post struct {
-	Title string;
-	Author string;
-	Created time.Time;
+	Title   string
+	Author  string
+	Created time.Time
 }
 
 type PostsData struct {
-	Name string;
-	Posts []database.ListPostsRow;
+	Name  string
+	Posts []database.ListPostsRow
 }
 
-type NewPostDto struct {
-	Title string;
-	Content string;
+type NewPostData struct {
+	Title   string
+	Content string
 }
 
-func validateNewPostData(r *http.Request) (NewPostDto, error) {
+func validateNewPostData(r *http.Request) (NewPostData, error) {
 	errs := []error{}
-	var newPost NewPostDto
+	var newPost NewPostData
 	err := r.ParseForm()
 	if err != nil {
 		return newPost, errors.New("Invalid form data")
@@ -122,4 +122,3 @@ func validateNewPostData(r *http.Request) (NewPostDto, error) {
 
 var postsTemplate = template.Must(template.New("base").ParseFiles("./templates/posts.html", "./templates/base.html"))
 var createPostTemplate = template.Must(template.New("base").ParseFiles("./templates/createPost.html", "./templates/base.html"))
-

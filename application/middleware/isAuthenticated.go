@@ -1,12 +1,13 @@
 package middleware
 
 import (
-	"net/http"
-	"github.com/charlie-pecora/new-reddit/sessions"
 	"context"
+	"github.com/charlie-pecora/new-reddit/sessions"
+	"net/http"
 )
 
 type ProfileKey string
+
 const ProfileContextKey ProfileKey = "profile"
 
 // IsAuthenticated is a middleware that checks if
@@ -23,4 +24,3 @@ func IsAuthenticated(next http.Handler) http.Handler {
 		}
 	})
 }
-

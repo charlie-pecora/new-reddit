@@ -5,8 +5,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/charlie-pecora/new-reddit/application/middleware"
 	"github.com/charlie-pecora/new-reddit/application/login"
+	"github.com/charlie-pecora/new-reddit/application/middleware"
 )
 
 func User(w http.ResponseWriter, r *http.Request) {

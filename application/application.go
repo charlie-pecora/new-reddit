@@ -1,25 +1,25 @@
 package application
 
 import (
+	"context"
 	"encoding/gob"
 	"html/template"
 	"log"
 	"net/http"
-	"time"
 	"os"
-	"context"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/charlie-pecora/new-reddit/application/login"
-	"github.com/charlie-pecora/new-reddit/application/user"
+	myMiddleware "github.com/charlie-pecora/new-reddit/application/middleware"
 	"github.com/charlie-pecora/new-reddit/application/posts"
+	"github.com/charlie-pecora/new-reddit/application/user"
 	"github.com/charlie-pecora/new-reddit/authenticator"
 	"github.com/charlie-pecora/new-reddit/database"
 	"github.com/charlie-pecora/new-reddit/sessions"
-	myMiddleware "github.com/charlie-pecora/new-reddit/application/middleware"
 )
 
 // New registers the routes and returns the router.
@@ -71,7 +71,7 @@ func New(auth *authenticator.Authenticator) *chi.Mux {
 }
 
 type IndexData struct {
-	Name string
+	Name    string
 	Picture string
 }
 
@@ -84,8 +84,8 @@ func Index(w http.ResponseWriter, r *http.Request) {
 	switch profile := session.Values["profile"].(type) {
 	case (login.Profile):
 		user = IndexData{
-			Name: profile.Nickname,
-			Picture:  profile.Picture,
+			Name:    profile.Nickname,
+			Picture: profile.Picture,
 		}
 	default:
 	}

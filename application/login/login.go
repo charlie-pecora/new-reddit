@@ -4,10 +4,10 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"errors"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
-	"log"
 
 	"github.com/charlie-pecora/new-reddit/authenticator"
 	"github.com/charlie-pecora/new-reddit/database"
@@ -15,15 +15,15 @@ import (
 )
 
 type AuthEndpoints struct {
-	a *authenticator.Authenticator
+	a  *authenticator.Authenticator
 	db *database.Queries
 }
 
 type Profile struct {
-	Name string
+	Name     string
 	Nickname string
-	Sub string
-	Picture string
+	Sub      string
+	Picture  string
 }
 
 func ParseProfile(source map[string]any) (Profile, error) {
@@ -119,11 +119,11 @@ func (auth AuthEndpoints) Callback(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	
+
 	// save user to database or update info
 	user, err := auth.db.CreateOrUpdateUser(r.Context(), database.CreateOrUpdateUserParams{
 		Name: profile.Nickname,
-		Sub: profile.Sub,
+		Sub:  profile.Sub,
 	})
 	if err != nil {
 		log.Println(err)
