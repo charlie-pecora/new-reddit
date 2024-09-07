@@ -65,6 +65,7 @@ func New(auth *authenticator.Authenticator) *chi.Mux {
 		r.Get("/posts", postsEndpoints.ListPosts)
 		r.Get("/posts/create", postsEndpoints.GetPostForm)
 		r.Post("/posts/create", postsEndpoints.CreatePost)
+		r.Get("/posts/{postId}", postsEndpoints.GetPostDetail)
 	})
 
 	return router

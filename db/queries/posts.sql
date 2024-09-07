@@ -11,6 +11,19 @@ order by created desc
 limit 100
 ;
 
+-- name: GetPostDetail :one
+select
+  p.id,
+  p.user_id,
+  u.name,
+  p.title,
+  p.content,
+  p.created
+from posts p
+join users u on u.id = p.user_id
+where p.id = @ID
+;
+
 -- name: CreatePosts :one
 insert into posts (user_id, title, content) values (
   (select id from users where sub = @Sub),

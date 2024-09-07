@@ -2,13 +2,20 @@
 <div>
   <h1>Welcome to NewReddit {{ .Name }}!</h1>  
   <div>
-    <form action="/posts/create" method="POST">
+    <form>
       <label for="title">Title:</label><br>
       <input type="text" id="title" name="title"><br>
       <label for="content">Content:</label><br>
       <input type="text" id="content" name="content"><br>
-      <input class="button" type="submit" value="Submit">
+      <button
+        class="button"
+        hx-post="/posts/create"
+        hx-trigger="click"
+        hx-target="#parent-div"
+        hx-swap="outerHTML"
+      >Create</button>
     </form>
   </div>
+  <div id="errors"></div>
 </div>
 {{end}}

@@ -39,6 +39,42 @@ func (q *Queries) CreatePosts(ctx context.Context, arg CreatePostsParams) (Post,
 	return i, err
 }
 
+const getPostDetail = `-- name: GetPostDetail :one
+select
+  p.id,
+  p.user_id,
+  u.name,
+  p.title,
+  p.content,
+  p.created
+from posts p
+join users u on u.id = p.user_id
+where p.id = $1
+`
+
+type GetPostDetailRow struct {
+	ID      int64
+	UserID  pgtype.Int8
+	Name    string
+	Title   string
+	Content pgtype.Text
+	Created pgtype.Timestamptz
+}
+
+func (q *Queries) GetPostDetail(ctx context.Context, id int64) (GetPostDetailRow, error) {
+	row := q.db.QueryRow(ctx, getPostDetail, id)
+	var i GetPostDetailRow
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Name,
+		&i.Title,
+		&i.Content,
+		&i.Created,
+	)
+	return i, err
+}
+
 const listPosts = `-- name: ListPosts :many
 select
   p.id,
